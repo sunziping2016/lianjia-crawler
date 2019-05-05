@@ -6,4 +6,4 @@ raw.csv: spider.py
 .PHONY: clean
 
 clean:
-	rm *.csv
+	rm -f *.csv
