@@ -1,3 +1,4 @@
 /.idea/
+__pycache__
 raw.csv
 result.csv
