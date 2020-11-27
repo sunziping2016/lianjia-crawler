@@ -2,12 +2,23 @@
 # -*- coding: utf-8 -*-
 import scrapy
 from bs4 import BeautifulSoup
+import json
 
 
 class LianjiaSpider(scrapy.Spider):
     name = 'lianjiaspider'
     start_urls = ['https://sh.lianjia.com/ershoufang/']
 
+    # @classmethod
+    # def from_crawler(cls, crawler, *args, **kwargs):
+    #     spider = super(LianjiaSpider, cls).from_crawler(crawler, *args, **kwargs)
+    #     crawler.signals.connect(spider.spider_closed, signal=scrapy.signals.spider_closed)
+    #     return spider
+    #
+    # def spider_closed(self, spider):
+    #     pass
+
+    # noinspection PyMethodOverriding
     def parse(self, response):
         for district in response.css('[data-role=ershoufang] > div > a'):
             yield response.follow(district, self.parse_district, meta={'district': district.css('::text').get()})
@@ -38,9 +49,11 @@ class LianjiaSpider(scrapy.Spider):
                 'page': response.meta['page'],
                 'link': item.select('.title a')[0]['href'],
                 'title': item.select('.title a')[0].get_text(),
+                'title tag': json.dumps([i.get_text() for i in item.select('.title .tagBlock')], ensure_ascii=False),
                 'info': item.select('.houseInfo')[0].get_text(),
                 'position': item.select('.positionInfo')[0].get_text(),
                 'follow': item.select('.followInfo')[0].get_text(),
+                'tag': json.dumps([i.get_text() for i in item.select('.tag span')], ensure_ascii=False),
                 'total price': item.select('.totalPrice')[0].get_text(),
                 'unit price': item.select('.unitPrice')[0].get_text()
             }
