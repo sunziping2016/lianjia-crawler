@@ -9,6 +9,13 @@ class LianjiaSpider(scrapy.Spider):
     name = 'lianjiaspider'
     start_urls = ['https://sh.lianjia.com/ershoufang/']
 
+    #def start_requests(self):
+    #    yield scrapy.Request('https://sh.lianjia.com/ershoufang/beicai/', self.parse_page, meta={
+    #        'district': '浦东',
+    #        'subdistrict': '北蔡',
+    #        'page': 1,
+    #    })
+
     # @classmethod
     # def from_crawler(cls, crawler, *args, **kwargs):
     #     spider = super(LianjiaSpider, cls).from_crawler(crawler, *args, **kwargs)
@@ -21,13 +28,15 @@ class LianjiaSpider(scrapy.Spider):
     # noinspection PyMethodOverriding
     def parse(self, response):
         for district in response.css('[data-role=ershoufang] > div > a'):
-            yield response.follow(district, self.parse_district, meta={'district': district.css('::text').get()})
+            yield response.follow(district, self.parse_district, meta={
+                'district': district.css('::text').get(),
+            })
 
     def parse_district(self, response):
         for subdistrict in response.css('[data-role=ershoufang] > div:nth-child(2) > a'):
              yield response.follow(subdistrict, self.parse_subdistrict, meta={
                  'district': response.meta['district'],
-                 'subdistrict': subdistrict.css('::text').get()
+                 'subdistrict': subdistrict.css('::text').get(),
              })
 
     def parse_subdistrict(self, response):
@@ -37,7 +46,7 @@ class LianjiaSpider(scrapy.Spider):
             yield response.follow(url, self.parse_page, meta={
                 'district': response.meta['district'],
                 'subdistrict': response.meta['subdistrict'],
-                "page": i + 1
+                "page": i + 1,
             }, dont_filter=True)
 
     def parse_page(self, response):
@@ -55,5 +64,5 @@ class LianjiaSpider(scrapy.Spider):
                 'follow': item.select('.followInfo')[0].get_text(),
                 'tag': json.dumps([i.get_text() for i in item.select('.tag span')], ensure_ascii=False),
                 'total price': item.select('.totalPrice')[0].get_text(),
-                'unit price': item.select('.unitPrice')[0].get_text()
+                'unit price': item.select('.unitPrice')[0].get_text(),
             }
